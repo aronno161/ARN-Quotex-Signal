@@ -1,0 +1,38 @@
+name: ARN Quotex Signal
+
+on:
+  workflow_dispatch:  # allows manual run
+  push:               # also runs when you push new code
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip openjdk-17-jdk unzip wget git
+          pip install buildozer cython
+
+      - name: Install Android SDK + NDK
+        run: |
+          sudo apt install -y android-sdk android-sdk-platform-23
+          sudo apt install -y android-sdk-platform-tools
+          sudo apt install -y android-sdk-build-tools
+
+      - name: Build APK
+        run: |
+          buildozer init || true
+          buildozer android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: Quotex-Signal-APK
+          path: bin/*.apk
